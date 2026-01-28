@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPHA TUBES | Sanraj Inratech LLP</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        alphaBlack: '#0a0a0a',
+                        alphaGray: '#959595',
+                        alphaAccent: '#262626'
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Shared Styles */
+        html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; background-color: #ffffff; color: #0a0a0a; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; overflow: hidden; pointer-events: none; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .logco { width:35px; }
+        ::selection { background: #000; color: #fff; }
+        
+        /* Loader */
+        .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease; }
+        
+        /* Custom Select Styles */
+        .custom-select-wrapper { position: relative; user-select: none; }
+        .custom-select { position: relative; cursor: pointer; transition: all 0.3s; }
+        .custom-select.open { border-color: #000; }
+        .custom-options { position: absolute; top: 110%; left: 0; right: 0; background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-10px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 50; max-height: 250px; overflow-y: auto; }
+        .custom-select.open .custom-options { opacity: 1; visibility: visible; pointer-events: all; transform: translateY(0); }
+        .custom-select.open .arrow-icon { transform: rotate(180deg); }
+        .option { padding: 12px 16px; display: flex; align-items: center; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #f3f4f6; }
+        .option:last-child { border-bottom: none; }
+        .option:hover { background: #f9fafb; }
+        .option.selected { background: #f3f4f6; }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 1000; opacity: 0; visibility: hidden;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.4s ease;
+        }
+        .modal-backdrop.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; width: 90%; max-width: 450px;
+            border-radius: 16px; padding: 40px; text-align: center;
+            transform: scale(0.95) translateY(20px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-backdrop.active .modal-content { transform: scale(1) translateY(0); }
+    </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white w-full relative">
+
+<div class="w-full overflow-hidden relative">
+    
+    <div class="loader" id="loader">
+        <div class="text-4xl font-display font-bold tracking-tighter animate-pulse flex items-center">
+            <img src="assets/logo.png" class="logco mr-2" onerror="this.style.display='none'"> SANRAJ INFRATECH
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="successModal">
+        <div class="modal-content shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-black"></div>
+            <div class="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-check text-3xl text-green-600"></i>
+            </div>
+            <h3 class="text-3xl font-display font-bold mb-2">Inquiry Sent</h3>
+            <p class="text-gray-500 mb-8">Thank you for contacting Alpha Tubes. Our sales team will review your requirements and get back to you shortly.</p>
+            <button onclick="closeModal()" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition transform active:scale-95">Close</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="w-full">
+        <nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.scrollTo(0,0)">
+                        <span class="font-display font-bold text-2xl tracking-tighter flex items-center">
+                            <span class="text-4xl align-middle mr-2">
+                                <img src="assets/logo.png" alt="" class="logco" onerror="this.style.display='none'" />
+                            </span> SANRAJ INFRATECH 
+                        </span>
+                    </div>
+                    <div class="hidden md:flex space-x-8 items-center">
+                        <a href="/about" class="text-sm font-medium hover:text-gray-600 transition">About Us</a>
+                        <a href="/" class="text-sm font-medium hover:text-gray-600 transition">Products</a>
+                        <a href="/" class="text-sm font-medium hover:text-gray-600 transition">Infrastructure</a>
+                        
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+   
+
+    <section id="contact" class="py-24 bg-black text-white overflow-hidden w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <div>
+                    <span class="text-gray-400 font-bold tracking-widest uppercase text-sm">Get in Touch</span>
+                    <h2 class="text-5xl font-display font-bold mt-4 mb-6">Let's Move Your Business Forward.</h2>
+                    <p class="text-gray-400 mb-10">Have a project in mind or need a quote? Our team is ready to assist you.</p>
+                </div>
+
+                <div class="bg-white text-black p-8 rounded-2xl">
+                    <form id="contactForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1">First Name</label>
+                                <input type="text" id="fname" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:outline-none focus:border-black transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1">Last Name</label>
+                                <input type="text" id="lname" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:outline-none focus:border-black transition">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1">Email Address</label>
+                            <input type="email" id="email" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:outline-none focus:border-black transition">
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="block text-xs font-bold uppercase mb-1">Product Interest</label>
+                            <input type="hidden" name="product_interest" id="product_interest_input">
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select w-full bg-gray-50 border border-gray-200 p-3 rounded-lg flex justify-between items-center" id="customSelect">
+                                    <span class="text-gray-500 text-sm" id="selectedValue">Select Product</span>
+                                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 arrow-icon"></i>
+                                    <div class="custom-options">
+                                        <div class="option" data-value="PEB Structures"><span class="text-sm font-medium">PEB Structures</span></div>
+                                        <div class="option" data-value="Column Pipes"><span class="text-sm font-medium">Column Pipes</span></div>
+                                        <div class="option" data-value="Solar Structures"><span class="text-sm font-medium">Solar Structures</span></div>
+                                        <div class="option" data-value="Other"><span class="text-sm font-medium">Other / Custom</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1">Message</label>
+                            <textarea id="message" rows="4" required class="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg focus:outline-none focus:border-black transition" placeholder="Tell us about your requirements..."></textarea>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-gray-800 transition flex justify-center items-center">
+                            <span>Send Inquiry</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-50 border-t border-gray-200 pt-16 pb-8 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500 text-sm">
+             <p id="fxtorm">&copy; 2026 Sanraj Inratech LLP. All rights reserved.</p>
+        </div>
+    </footer>
+
+</div>
+
+<script src="cdn.pipeline.tailwind.css.js"></script>
+</body>
+</html>

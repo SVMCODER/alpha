@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANRAJ INFRATECH ADMIN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Manrope', 'sans-serif'], display: ['Space Grotesk', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+    .logco {
+        width:35px;
+    }
+        body { background-color: #f8f9fa; color: #0a0a0a; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        /* Custom Modal System */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 50; display: none;
+            align-items: center; justify-content: center; opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.open { display: flex; opacity: 1; }
+        .modal-box {
+            background: white; padding: 2rem; border-radius: 1rem;
+            width: 90%; max-width: 500px; transform: scale(0.9);
+            transition: transform 0.3s ease; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .modal-overlay.open .modal-box { transform: scale(1); }
+
+        /* Custom Status Badges */
+        .badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge-new { background: #fee2e2; color: #991b1b; } /* Red */
+        .badge-contacted { background: #fef3c7; color: #92400e; } /* Yellow */
+        .badge-closed { background: #d1fae5; color: #065f46; } /* Green */
+        
+        /* Login Box */
+        .login-container { min-height: 100vh; display: flex; align-items: center;
+        justify-content: center; background: #000; }
+         .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display:flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s ease; }
+        
+    </style>
+</head>
+<body>
+
+    <div id="loginSection" class="login-container">
+        <div class="bg-white p-8 rounded-2xl w-96 shadow-2xl text-center">
+            <h1 class="font-display font-bold text-3xl mb-2">SANRAJ INFRATECH</h1>
+            <p class="text-gray-500 text-sm mb-6">Please login to continue</p>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="loginEmail" placeholder="Admin Email" class="w-full bg-gray-50 border p-3 rounded-lg text-sm focus:border-black outline-none" required>
+                <input type="password" id="loginPass" placeholder="Password" class="w-full bg-gray-50 border p-3 rounded-lg text-sm focus:border-black outline-none" required>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition">Login</button>
+            </form>
+            <p id="loginError" class="text-red-500 text-xs mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <div id="dashboardSection" class="hidden min-h-screen">
+        <nav class="glass sticky top-0 border-b border-gray-200 z-40 px-6 py-4 flex justify-between items-center">
+            <div class="font-display font-bold text-xl tracking-tight">SANRAJ <span class="text-gray-400">INFRATECH</span></div>
+            <button onclick="logout()" class="text-xs font-bold uppercase hover:text-red-600 transition">Logout <i class="fa-solid fa-right-from-bracket ml-1"></i></button>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-6 py-8">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-3xl font-display font-bold">Inquiries</h2>
+                    <p class="text-gray-500 text-sm mt-1">Real-time database records</p>
+                </div>
+                <div class="bg-white px-4 py-2 rounded-lg border text-sm font-bold shadow-sm">
+                    Total: <span id="totalCount">0</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold uppercase text-gray-500 tracking-wider">
+                                <th class="p-4">Date</th>
+                                <th class="p-4">Name</th>
+                                <th class="p-4">Product</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-sm divide-y divide-gray-100">
+                            </tbody>
+                    </table>
+                </div>
+                <div id="loadingMsg" class="p-8 text-center text-gray-400">Loading data...</div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="font-display font-bold text-2xl mb-4">Update Status</h3>
+            <p class="text-gray-500 text-sm mb-4" id="editModalInfo">For: John Doe</p>
+            
+            <input type="hidden" id="editDocId">
+            
+            <label class="block text-xs font-bold uppercase mb-2">Current Status</label>
+            <div class="grid grid-cols-3 gap-2 mb-6">
+                <button onclick="selectStatus('New')" class="status-btn border rounded-lg py-2 text-xs font-bold hover:bg-gray-50 transition" data-val="New">New</button>
+                <button onclick="selectStatus('Contacted')" class="status-btn border rounded-lg py-2 text-xs font-bold hover:bg-gray-50 transition" data-val="Contacted">Contacted</button>
+                <button onclick="selectStatus('Closed')" class="status-btn border rounded-lg py-2 text-xs font-bold hover:bg-gray-50 transition" data-val="Closed">Closed</button>
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="closeEditModal()" class="flex-1 py-3 rounded-lg border font-bold hover:bg-gray-50">Cancel</button>
+                <button onclick="saveStatus()" class="flex-1 py-3 rounded-lg bg-black text-white font-bold hover:bg-gray-800">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="font-display font-bold text-2xl">Inquiry Details</h3>
+                <button onclick="document.getElementById('viewModal').classList.remove('open')" class="text-gray-400 hover:text-black"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="space-y-4 text-sm">
+                <div><span class="text-gray-400 block text-xs uppercase font-bold">Name</span> <span id="viewName" class="font-bold"></span></div>
+                <div><span class="text-gray-400 block text-xs uppercase font-bold">Email</span> <span id="viewEmail"></span></div>
+                <div><span class="text-gray-400 block text-xs uppercase font-bold">Product</span> <span id="viewProduct"></span></div>
+                <div><span class="text-gray-400 block text-xs uppercase font-bold">Message</span> <p id="viewMessage" class="bg-gray-50 p-3 rounded mt-1 border"></p></div>
+            </div>
+        </div>
+    </div>
+ <div class="loader" id="loader">
+        <div class="text-4xl font-display font-bold tracking-tighter animate-pulse flex items-center">
+            <img src="assets/logo.png" class="logco mr-2" onerror="this.style.display='none'"> SANRAJ INFRATECH
+        </div>
+        
+    </div>
+    <script src="0gso729ksla802jskslgskwiw8282926jekwi27jeow.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        window.addEventListener('load', () => {
+        const loader = document.getElementById('loader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => { loader.style.display = 'none'; initAnimations(); }, 500);
+        }, 1000);
+    });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALPHA TUBES | Sanraj Inratech LLP</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        alphaBlack: '#0a0a0a',
+                        alphaGray: '#959595',
+                        alphaAccent: '#262626'
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom UI Elements */
+        html, body {
+            overflow-x: hidden; /* Critical for stopping side scroll */
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #0a0a0a;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #000;
+            border-radius: 4px;
+        }
+
+        /* 3D Canvas Container */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+            overflow: hidden;
+            pointer-events: none; /* Ensures clicks pass through */
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+.logco {
+    width:35px;
+}
+        /* Custom Selection Color */
+        ::selection {
+            background: #000;
+            color: #fff;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white w-full relative">
+
+<div class="w-full overflow-hidden relative">
+    
+    <div class="loader" id="loader">
+        <div class="text-4xl font-display font-bold tracking-tighter animate-pulse" style="text-align: center;align-content: center;align-items: center;align-self: center;display:flex;">
+            <img src="assets/logo.png" class="logco mr-2"> SANRAJ INFRATECH </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="w-full">
+        <nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.scrollTo(0,0)">
+                        <span class="font-display font-bold text-2xl tracking-tighter" style="text-align: center;align-content: center;align-items: center;align-self: center;display:flex;">
+                            <span class="text-4xl align-middle">
+                                <img src="assets/logo.png" alt="" class="logco"  />
+                            </span> SANRAJ INFRATECH
+                        </span>
+                    </div>
+
+                    <div class="hidden md:flex space-x-8 items-center">
+                        <a href="/about" class="text-sm font-medium hover:text-gray-600 transition">About Us</a>
+                        <a href="/#products" class="text-sm font-medium hover:text-gray-600 transition">Products</a>
+                        <a href="/#infrastructure" class="text-sm font-medium hover:text-gray-600 transition">Infrastructure</a>
+                        <a href="/#clients" class="text-sm font-medium hover:text-gray-600 transition">Clients</a>
+                        <button class="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 transition transform hover:scale-105 active:scale-95" onclick="window.location.href ='/contact'">
+                            Contact Now
+                        </button>
+                    </div>
+
+                    <div class="md:hidden flex items-center">
+                        <button id="mobile-menu-btn" class="text-black focus:outline-none">
+                            <i class="fa-solid fa-bars text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
+                <div class="px-4 pt-2 pb-6 space-y-1">
+                    <a href="/about" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">About Us</a>
+                    <a href="/#products" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">Products</a>
+                    <a href="/#infrastructure" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">Infrastructure</a>
+                    <a href="/#clients" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">Clients</a>
+                    <a href="/contact" class="block px-3 py-3 text-base font-bold text-black bg-gray-50 mt-2">Contact Now</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div id="about" class="pt-40 pb-20 px-4 text-center bg-gray-50 border-b border-gray-200 w-full relative">
+        <span class="text-xs font-bold tracking-widest uppercase text-gray-500 mb-4 block gs-reveal">Sanraj Inratech LLP</span>
+        <h1 class="text-5xl md:text-7xl font-display font-bold mb-6 gs-reveal leading-tight">Precision Engineered.<br>Built to Last.</h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto gs-reveal">Explore our comprehensive range of steel structures and piping solutions manufactured to the highest industry standards.</p>
+    </div>
+
+    <main class="w-full relative" id="products">
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-32">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center group overflow-hidden">
+                <div class="order-2 md:order-1 gs-fade-right">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <span class="text-6xl font-display font-bold text-gray-200">01</span>
+                        <h2 class="text-4xl font-display font-bold">PEB Structures</h2>
+                    </div>
+                    <p class="text-gray-600 text-lg mb-8 leading-relaxed">
+                        Our Pre-Engineered Building (PEB) structures are designed for speed, strength, and versatility. Ideal for warehouses, factories, and industrial sheds, these structures are manufactured in-house ensuring precise dimensions and rapid assembly.
+                    </p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>Customizable Span & Height</span></li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>Weather Resistant Coating</span></li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>Cost-Effective Installation</span></li>
+                    </ul>
+                    <a href="/contact" class="inline-block border-b border-black pb-1 font-bold hover:text-gray-600">Select Service <i class="fa-solid fa-arrow-right ml-2"></i></a>
+                </div>
+                <img src="assets/peb1.jpg" class="order-1 md:order-2 bg-gray-100 rounded-3xl h-96 flex items-center justify-center relative overflow-hidden gs-fade-left">
+                    
+                
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center group overflow-hidden">
+                <img class="order-1 bg-black rounded-3xl h-96 flex items-center justify-center relative overflow-hidden gs-fade-right" src="assets/istockphoto-1405880267-612x612.jpg">
+                    
+                <div class="order-2 gs-fade-left">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <span class="text-6xl font-display font-bold text-gray-200">02</span>
+                        <h2 class="text-4xl font-display font-bold">Solar Structures</h2>
+                    </div>
+                    <p class="text-gray-600 text-lg mb-8 leading-relaxed">
+                        Robust mounting solutions for the renewable energy sector. Our solar structures are galvanized to withstand harsh environmental conditions, ensuring your solar panels stay secure for decades.
+                    </p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>Hot-Dip Galvanized</span></li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>High Wind Load Resistance</span></li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-black mr-4"></i> <span>Easy Alignment</span></li>
+                    </ul>
+                    <a href="/contact" class="inline-block border-b border-black pb-1 font-bold hover:text-gray-600">Select Service <i class="fa-solid fa-arrow-right ml-2"></i></a>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center group overflow-hidden">
+                <div class="order-2 md:order-1 gs-fade-right">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <span class="text-6xl font-display font-bold text-gray-200">03</span>
+                        <h2 class="text-4xl font-display font-bold">Pipes & Fittings</h2>
+                    </div>
+                    <p class="text-gray-600 text-lg mb-8 leading-relaxed">
+                        A complete range including Column Pipes, Slotted Pipes, and Borewell Fittings. Manufactured from high-grade raw materials to ensure maximum flow and durability in underground applications.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <h4 class="font-bold mb-1">Column Pipes</h4>
+                            <p class="text-xs text-gray-500">For submersible pumps</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <h4 class="font-bold mb-1">Slotted Pipes</h4>
+                            <p class="text-xs text-gray-500">For filtration</p>
+                        </div>
+                    </div>
+                    <a href="/contact" class="inline-block border-b border-black pb-1 font-bold hover:text-gray-600">Select Service <i class="fa-solid fa-arrow-right ml-2"></i></a>
+                </div>
+                <img class="order-1 md:order-2 bg-gray-100 rounded-3xl h-96 flex items-center justify-center relative overflow-hidden gs-fade-left" src="assets/images (3).jpg">
+                    
+            </div>
+        </section>
+    </main>
+<section id="catalogue" class="py-24 bg-white overflow-hidden w-full relative">
+    
+    <div class="absolute inset-0 grid-bg opacity-40 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center max-w-3xl mx-auto mb-20 gs-reveal">
+            <span class="text-xs font-bold tracking-widest uppercase text-gray-500 border-b border-gray-200 pb-2">Products & Innovations</span>
+            <h2 class="text-4xl md:text-5xl font-display font-bold mt-6 mb-6">Optimized & Industry-ready Solutions.</h2>
+            <p class="text-gray-600 text-lg leading-relaxed">
+                We build products that fulfill your needs. Alpha Tubes is a renowned manufacturer of a qualitative assortment of industrial pipes, clamps, and structural solutions.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/GI-PIPES.jpg" onerror="this.src='https://images.unsplash.com/photo-1535198428448-69362634354f?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-layer-group text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">Industrial Pipes</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> PVC Slotted Pipes
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> MS Square Pipes
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> APL Apollo MS Pipe
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> MS Slotted Screen Pipes
+                        </li>
+                         <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Column Pipes
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/Screenshot-2024-02-12-041259.png" onerror="this.src='https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-warehouse text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">PEB Structures</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Green House Structures
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Polycarbonate Sheets
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Wall & Roof Cladding
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Ground Mounting Structures
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Industrial Doors & Windows
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/CI-PIPES.jpg" onerror="this.src='https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-gears text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">Pump Accessories</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Casing Pipes
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Nuts & Bolts
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Rubber Packing
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> SS Pipe Clamps
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Pump NRV Nipples
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/Screenshot-2024-02-12-041824.png" onerror="this.src='https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-bore-hole text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">Tubewell Fittings</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Socket Elbows
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Bore Clamps
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Tubewell Assembly
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Supporting Girders & Bail Plugs
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Couplers & Reducers
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+             <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/SOLAR-POLES.jpeg" onerror="this.src='https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&q=80&w=800'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-solar-panel text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">Solar Lighting</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Battery Stand Boxes
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> H-Frames
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Pole Clamps
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> LED Brackets
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="group bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="cat/FLANGES.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6">
+                        <i class="fa-solid fa-circle-notch text-white text-2xl mb-2"></i>
+                        <h3 class="text-white text-2xl font-display font-bold">Flanges & Joints</h3>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <ul class="space-y-3">
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Puddle Flanges
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Slip-on Flanges
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> MS Flanges
+                        </li>
+                        <li class="flex items-start text-sm text-gray-600">
+                            <i class="fa-solid fa-check text-xs mt-1 mr-3 text-black"></i> Custom Pipe Joints
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+      
+
+    </div>
+</section>
+
+    <section class="py-20 bg-black text-white mt-20 w-full" id="contact">
+        <div class="max-w-4xl mx-auto text-center px-4">
+            <h2 class="text-4xl font-display font-bold mb-6">Need Custom Dimensions?</h2>
+            <p class="text-gray-400 mb-8">We specialize in tailor-made solutions. If you have specific technical drawings or requirements, our engineering team is ready to execute.</p>
+            <a href="/contact" class="inline-block bg-white text-black px-8 py-4 rounded-lg font-bold hover:bg-gray-200 transition">Contact Engineering Team</a>
+        </div>
+    </section>
+
+    <footer class="bg-gray-50 border-t border-gray-200 pt-16 pb-8 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <span class="font-display font-bold text-xl tracking-tighter">
+                        ALPHA TUBES 
+                    </span>
+                    <p class="text-xs text-gray-500 mt-4">A Unit of Sanraj Inratech LLP</p>
+                </div>
+             
+                
+                
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><a href="/about" class="hover:text-black">About Us</a></li>
+                        <li><a href="/#infrastructure" class="hover:text-black">Infrastructure</a></li>
+                        <li><a href="#clients" class="hover:text-black">Clients</a></li>
+                        <li><a href="/contact" class="hover:text-black">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><a href="/privacy" class="hover:text-black">Privacy Policy</a></li>
+                        <li><a href="/terms" class="hover:text-black">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p id="fxtorm">&copy; 2026 Sanraj Inratech LLP. All rights reserved.</p>
+                
+            </div>
+        </div>
+    </footer>
+
+</div> <script>
+    // Standard Animations
+    // Wait for DOM to load fully before triggering GSAP
+    document.addEventListener("DOMContentLoaded", (event) => {
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // 3D Background
+        const container = document.getElementById('canvas-container');
+        if(container) {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            const particles = new THREE.BufferGeometry();
+            const count = 500;
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) positions[i] = (Math.random() - 0.5) * 15;
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const mat = new THREE.PointsMaterial({ size: 0.02, color: 0x000000 });
+            const mesh = new THREE.Points(particles, mat);
+            scene.add(mesh);
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                mesh.rotation.y += 0.001;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle resize for Three.js
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    });
+
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('loader');
+        setTimeout(() => {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                initAnimations(); 
+            }, 500);
+        }, 200);
+    });
+
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if(menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('navbar');
+        if (window.scrollY > 50) {
+            nav.classList.add('shadow-sm');
+        } else {
+            nav.classList.remove('shadow-sm');
+        }
+    });
+    
+    function initAnimations() {
+        gsap.from(".gs-reveal", { y: 30, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" });
+        
+        gsap.utils.toArray(".gs-fade-right").forEach(el => {
+            gsap.from(el, { scrollTrigger: { trigger: el, start: "top 80%" }, x: -50, opacity: 0, duration: 1 });
+        });
+        
+        gsap.utils.toArray(".gs-fade-left").forEach(el => {
+            gsap.from(el, { scrollTrigger: { trigger: el, start: "top 80%" }, x: 50, opacity: 0, duration: 1 });
+        });
+    }
+    function logCurrentYear() {
+  const year = new Date().getFullYear();
+  document.getElementById("fxtorm").innerHTML = `&copy; ${year} • Sanraj Infratech LLP | Alpha Tubes`
+}
+
+logCurrentYear();
+</script>
+</body>
+</html>

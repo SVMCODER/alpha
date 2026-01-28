@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | ALPHA TUBES - Sanraj Inratech LLP</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        alphaBlack: '#0a0a0a',
+                        alphaGray: '#959595',
+                        alphaAccent: '#262626'
+                    },
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base Styles matching the Homepage */
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            background-color: #ffffff;
+            color: #0a0a0a;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
+
+        /* 3D Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Navigation */
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Grid Background Pattern */
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        }
+
+        /* Timeline Connector */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 20px;
+            width: 1px;
+            background: #e5e7eb;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        ::selection {
+            background: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white">
+
+    <div class="loader" id="loader">
+        <div class="text-4xl font-display font-bold tracking-tighter animate-pulse flex items-center">
+            <img src="assets/logo.png" class="w-8 mr-2" alt=""> SANRAJ INFRATECH
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <nav class="fixed w-full z-50 glass transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="window.location.href='/'">
+                    <span class="font-display font-bold text-2xl tracking-tighter flex items-center">
+                        <img src="assets/logo.png" alt="" class="w-8 mr-2" /> SANRAJ INFRATECH 
+                    </span>
+                </div>
+
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="/" class="text-sm font-medium hover:text-gray-600 transition">Home</a>
+                    <a href="/about" class="text-sm font-bold text-black border-b-2 border-black pb-1 transition">About Us</a>
+                    <a href="/#products" class="text-sm font-medium hover:text-gray-600 transition">Products</a>
+                    <a href="/#clients" class="text-sm font-medium hover:text-gray-600 transition">Clients</a>
+                    <button class="bg-black text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 transition transform hover:scale-105 active:scale-95" onclick="window.location.href ='/contact'">
+                        Contact Now
+                    </button>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-black focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 absolute w-full">
+            <div class="px-4 pt-2 pb-6 space-y-1 shadow-lg">
+                <a href="/" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">Home</a>
+                <a href="/about" class="block px-3 py-3 text-base font-bold text-gray-900 bg-gray-50">About Us</a>
+                <a href="/#products" class="block px-3 py-3 text-base font-medium text-gray-900 hover:bg-gray-50">Products</a>
+                <a href="/contact" class="block px-3 py-3 text-base font-bold text-black bg-gray-100 mt-2">Contact Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="pt-40 pb-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="inline-block bg-gray-100 rounded-full px-4 py-1.5 mb-6 border border-gray-200 gs-reveal">
+                <span class="text-xs font-bold tracking-widest uppercase">Sanraj Inratech LLP</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-display font-bold mb-8 gs-reveal leading-tight">
+                Engineered for Strength.<br>Driven by <span class="text-gray-400">Values.</span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto gs-reveal leading-relaxed">
+                We are a premier manufacturer and trader based out of Delhi-NCR, redefining infrastructure with over a decade of excellence in steel, solar, and piping solutions.
+            </p>
+        </div>
+    </header>
+
+    <section class="py-24 bg-white border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                
+                <div class="lg:col-span-7 gs-fade-up">
+                    <h2 class="text-sm font-bold tracking-widest uppercase text-gray-400 mb-2">Our Proprietor</h2>
+                    <h3 class="text-4xl font-display font-bold mb-8">Leadership with Technical Precision.</h3>
+                    
+                    <div class="prose prose-lg text-gray-600">
+                        <p class="mb-6">
+                            The firm has achieved a noteworthy position in the market under the visionary leadership of <strong>Mr. Vimal Rai Singla</strong>. With a strong engineering background and a deep passion for the field, Mr. Singla established Sanraj Inratech LLP more than 10 years ago.
+                        </p>
+                        <p class="mb-6">
+                            His profound technical knowledge of the industry—its ways, means, products, and infrastructure—has been the cornerstone of our growth. Unlike typical traders, our leadership comes from a place of engineering expertise, ensuring that every product we manufacture meets rigorous technical standards.
+                        </p>
+                        <p>
+                            He understood early on that every customer is special and comes with a unique vision. Our goal is to provide tailor-made solutions of high quality to every individual customer by offering a wide variety of existing and customized product segments.
+                        </p>
+                    </div>
+
+                    <div class="mt-10 p-8 bg-black text-white rounded-2xl relative overflow-hidden">
+                        <i class="fa-solid fa-quote-right absolute top-4 right-4 text-4xl text-gray-800"></i>
+                        <p class="text-xl font-display font-medium italic mb-4 relative z-10">
+                            "When the customer comes first, the customer will last."
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            — This philosophy is how the majority of our customers have been associated with us for years, indicating higher satisfaction and trust.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 space-y-6 gs-fade-up">
+                    <div class="bg-gray-50 p-8 rounded-2xl border border-gray-200">
+                        <h4 class="font-display font-bold text-lg mb-6">Company Snapshot</h4>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between border-b border-gray-200 pb-4">
+                                <span class="text-gray-500 text-sm">Legal Name</span>
+                                <span class="font-bold text-sm">Sanraj Inratech LLP</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-200 pb-4">
+                                <span class="text-gray-500 text-sm">Establishment</span>
+                                <span class="font-bold text-sm">2013</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-200 pb-4">
+                                <span class="text-gray-500 text-sm">Nature of Business</span>
+                                <span class="font-bold text-sm">Manufacturer & Trader</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-200 pb-4">
+                                <span class="text-gray-500 text-sm">Legal Status</span>
+                                <span class="font-bold text-sm">LLP (Limited Liability Partnership)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500 text-sm">CEO/Proprietor</span>
+                                <span class="font-bold text-sm">Mr. Vimal Rai Singla</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-100 p-8 rounded-2xl border border-gray-200 flex items-center justify-between">
+                        <div>
+                            <div class="text-4xl font-display font-bold mb-1">10+</div>
+                            <div class="text-xs font-bold uppercase text-gray-500">Years of Experience</div>
+                        </div>
+                        <div class="h-10 w-px bg-gray-300"></div>
+                        <div>
+                            <div class="text-4xl font-display font-bold mb-1">NCR</div>
+                            <div class="text-xs font-bold uppercase text-gray-500">Based HQ</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-gray-50 grid-bg overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-4xl font-display font-bold mb-4">Our Infrastructure</h2>
+                <p class="text-gray-600">A nexus of modern technology and skilled workforce located in the industrial heart of Ghaziabad.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm gs-fade-up">
+                    <div class="flex items-center mb-6">
+                        <div class="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa-solid fa-industry text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">The Facility</h3>
+                    </div>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        Our modern infrastructural facility is spread out over <strong>800 meters</strong> in the Prakash Industrial Estate, Sahibabad, Ghaziabad. This strategic location allows for efficient logistics and supply chain management across Delhi-NCR and beyond.
+                    </p>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Segregated manufacturing units</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Equipped with modern machinery</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Timely technological upgrades</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm gs-fade-up">
+                    <div class="flex items-center mb-6">
+                        <div class="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa-solid fa-truck-fast text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Logistics & Reach</h3>
+                    </div>
+                    <p class="text-gray-600 mb-6 leading-relaxed">
+                        We have established a strong nexus with major transporters across the nation. This enables us to deliver both small and bulk orders in a predefined time frame.
+                    </p>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 class="font-bold text-sm mb-2">Current Delivery Network:</h4>
+                        <div class="flex gap-4">
+                            <span class="px-3 py-1 bg-white border border-gray-200 rounded-md text-xs font-bold">Pan-India</span>
+                            <span class="px-3 py-1 bg-white border border-gray-200 rounded-md text-xs font-bold">Nepal</span>
+                            <span class="px-3 py-1 bg-gray-200 border border-gray-300 rounded-md text-xs text-gray-500">Expanding Globally</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-black text-white rounded-3xl p-10 md:p-16 gs-fade-up">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h3 class="text-3xl font-display font-bold mb-6">The Backbone: Our Team</h3>
+                        <p class="text-gray-400 mb-8 leading-relaxed">
+                            We attain our high standards through an experienced and competent workforce committed to work. Our diligent team of professionals helps us build a reputable brand in the market through consistent hard work.
+                        </p>
+                        <button class="bg-white text-black px-6 py-3 rounded-full text-sm font-bold hover:bg-gray-200 transition" onclick="window.location.href='/contact'">Join Our Network</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-user-tie text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Procurement Experts</div>
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-helmet-safety text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Engineers</div>
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Quality Checkers</div>
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-box-open text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Logistics Staff</div>
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-laptop-file text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Admin & Accounts</div>
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 text-center hover:bg-gray-800 transition">
+                            <i class="fa-solid fa-handshake text-2xl mb-2 text-gray-500"></i>
+                            <div class="font-bold text-sm">Sales Team</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-display font-bold mb-12 border-l-4 border-black pl-6">Why Sanraj Inratech?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Superior Quality</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Manufactured in-house by our team of experts. We are valued for the level of quality, durability, strength, and finish of the products that we deliver.
+                    </p>
+                </div>
+
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Customized Solutions</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        We don't just sell standard sizes. We provide tailor-made solutions of high quality to every individual customer, catering to specific product segment requirements.
+                    </p>
+                </div>
+
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Competitive Pricing</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Our USP is to deliver products to our clients at reasonable prices. By manufacturing in-house and sourcing raw materials from leading manufacturers, we keep costs optimized.
+                    </p>
+                </div>
+
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Varied Product Line</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        From PEB structures to MS pipes, solar structures, and borewell fittings—we offer a comprehensive range of steel and metal products.
+                    </p>
+                </div>
+
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Timely Execution</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        We value time. Our focus lies on on-time delivery. We handle small as well as large consignments with equal efficiency.
+                    </p>
+                </div>
+                
+                <div class="group">
+                    <div class="h-1 w-full bg-gray-100 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 h-full w-0 bg-black group-hover:w-full transition-all duration-500"></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Raw Material Quality</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        We attain our quality by procuring raw materials only from leading manufacturers, ensuring the foundation of our products is solid.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-gray-50 border-y border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-xs font-bold tracking-widest uppercase text-gray-500">Our Reputation</span>
+                <h2 class="text-3xl font-display font-bold mt-2">Serving Government & Private Sectors</h2>
+                <p class="text-gray-600 mt-4">We have been serving prestigious clients for over a decade.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center mr-4 text-blue-900 font-bold" src="logos/1280px-Larsen&Toubro_logo.svg.png">
+                    <span class="font-bold text-gray-800">Larsen & Toubro</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-white rounded-full flex items-center justify-center mr-4 text-orange-900 font-bold" src="logos/goi.png">
+                    <span class="font-bold text-gray-800">Ministry of Jal Shakti</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center mr-4 text-green-900 font-bold" src="logos/up.png">
+                    <span class="font-bold text-gray-800">Govt. of Uttar Pradesh</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center mr-4 text-gray-900 font-bold" src="logos/Delhi_Jal_Board.png">
+                    <span class="font-bold text-gray-800">Delhi Jal Board</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img src="logos/ncc.jpeg" class="h-10 w-10 bg-red-50 rounded-full flex items-center justify-center mr-4 text-red-900 font-bold">
+                    <span class="font-bold text-gray-800">NCC Limited</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-purple-50 rounded-full flex items-center justify-center mr-4 text-purple-900 font-bold" src="logos/vindhya-telelinks--600.png">
+                    <span class="font-bold text-gray-800">Vindhya Telelinks Limited</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-yellow-50 rounded-full flex items-center justify-center mr-4 text-yellow-900 font-bold" src="logos/nkg.jpg">
+                    <span class="font-bold text-gray-800">NKG Infra Ltd</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center">
+                    <img class="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center mr-4 text-indigo-900 font-bold" src="logos/pci.jpeg">
+                    <span class="font-bold text-gray-800">PCI Infraprojects Pvt Ltd</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-center bg-gray-50 border-dashed">
+                    <span class="text-sm text-gray-400 font-medium">And many more...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-black text-white text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-4xl md:text-5xl font-display font-bold mb-6">Ready to Build with Alpha Tubes?</h2>
+            <p class="text-gray-400 mb-10 text-lg">
+                Whether you need PEB structures, Solar mountings, or specialized piping, Sanraj Inratech LLP is your trusted partner for quality and reliability.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="window.location.href='/contact'" class="bg-white text-black px-8 py-4 rounded-full font-bold hover:bg-gray-200 transition">
+                    Request A Service
+                </button>
+                <button onclick="window.location.href='/catalouge'" class="border border-white text-white px-8 py-4 rounded-full font-bold hover:bg-white hover:text-black transition">
+                    View Products
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-50 border-t border-gray-200 pt-16 pb-8 w-full overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="col-span-1 md:col-span-1">
+                    <span class="font-display font-bold text-xl tracking-tighter flex items-center">
+                        <img src="assets/logo.png" class="w-6 mr-2" alt=""> ALPHA TUBES
+                    </span>
+                    <p class="text-xs text-gray-500 mt-4">A Unit of Sanraj Inratech LLP</p>
+                    <p class="text-xs text-gray-500 mt-2">Prakash Industrial Estate, Sahibabad,<br>Ghaziabad, Uttar Pradesh</p>
+                </div>
+        
+                <div>
+                    <h4 class="font-bold mb-4">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><a href="/" class="hover:text-black">Home</a></li>
+                        <li><a href="/about" class="text-black font-bold">About Us</a></li>
+                        <li><a href="/#products" class="hover:text-black">Products</a></li>
+                        <li><a href="/contact" class="hover:text-black">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Products</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>PEB Structures</li>
+                        <li>Solar Structures</li>
+                        <li>Column Pipes</li>
+                        <li>Borewell Fittings</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>Privacy Policy</li>
+                        <li>Terms of Service</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p id="footer-year">&copy; 2026 Sanraj Inratech LLP. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update Year
+        document.getElementById("footer-year").innerHTML = `&copy; ${new Date().getFullYear()} Sanraj Inratech LLP. All rights reserved.`;
+
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Loader & Init
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    initAnimations(); 
+                }, 500);
+            }, 200);
+        });
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-sm');
+            } else {
+                nav.classList.remove('shadow-sm');
+            }
+        });
+
+        // GSAP Animations
+        function initAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Hero Reveal
+            gsap.from(".gs-reveal", {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: "power3.out"
+            });
+
+            // Fade Up Elements
+            gsap.utils.toArray(".gs-fade-up").forEach(el => {
+                gsap.from(el, {
+                    scrollTrigger: {
+                        trigger: el,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    },
+                    y: 40,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out"
+                });
+            });
+        }
+
+        // Three.js Background (Subtle rotation for About page)
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            
+            // Camera setup
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 8;
+
+            // Renderer
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Geometry (Abstract Pipe Shapes)
+            const geometry = new THREE.TorusGeometry(3, 0.1, 16, 100); 
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xe5e7eb, 
+                transparent: true, 
+                opacity: 0.5,
+                wireframe: true 
+            });
+
+            const group = new THREE.Group();
+            
+            // Create multiple rings
+            for (let i = 0; i < 5; i++) {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+                mesh.scale.setScalar(1 + i * 0.5);
+                group.add(mesh);
+            }
+            scene.add(group);
+
+            // Animation Loop
+            let mouseX = 0;
+            let mouseY = 0;
+
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                // Very slow, majestic rotation for "About Us" feel
+                group.rotation.y += 0.001;
+                group.rotation.x += 0.0005;
+                
+                // Subtle mouse interaction
+                group.rotation.x += mouseY * 0.005;
+                group.rotation.y += mouseX * 0.005;
+                
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        initThreeJS();
+    </script>
+</body>
+</html>
